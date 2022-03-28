@@ -1,45 +1,56 @@
-use market_db;
-drop procedure if exists user_proc1;
+drop procedure if exists user_proc4;
 
 DELIMITER $$
-create procedure user_proc1(in username varchar(10))
-begin
-	select * from market_db.member where mem_name = username;
-end $$
 
-DELIMITER ; 
-
-call user_proc1('에이핑크');
-call user_proc1('블랙핑크');
-    
-drop procedure if exists user_proc2;
-DELIMITER $$
-create procedure user_proc2(in usernumber int, in userheight int)
-	begin
-		select * from market_db.member
-			where mem_number > usernumber and height > userheight;
-	end $$
-DELIMITER ;
-
-call user_proc2(6, 105);
-
-create table noTable(
-	id int auto_increment primary key,
-    txt char(10)
-);
-
-drop procedure if exists user_proc3;
-DELIMITER $$
-create procedure user_proc3(
-	in txtValue char(10),
-    out outValue int)
-    
+create procedure user_proc4(
+	in memName char(10)
+	)
     begin
-		insert into noTable values(null, txtValue);
-        select max(id) into outValue from noTable;
+		declare debutYear int;
+        select year(debut_date) into debutYear from member
+			where mem_name = memName;
+		if (debutYear < 2015) then 
+			select '고참 가수네요.' as '메시지';
+		elseif (debutYear >= 2015) then
+			select '신인 가수네요.' as '메시지';
+		end if;
 	end $$
-    
+
 DELIMITER ;
 
-call user_proc3('테스트1', @txtValue);
-select concat('입력된 ID값 : ', @txtValue);
+call user_proc4('오마이걸');
+
+DELIMITER $$
+create procedure user_proc5()
+
+begin
+	declare hap int;
+    declare num int;
+    set hap = 0;
+    set num = 1;
+    
+    while (num<=100) do
+		set hap = hap + num;
+        set num = num + 1;
+	end while;
+    select hap as '1~100 합계';
+end $$
+DELIMITER ;
+
+call user_proc5();
+
+drop procedure if exists user_proc6;
+DELIMITER $$
+create procedure user_proc6(
+	in tableName char(30)
+)
+
+begin
+	set @setQuery = concat('select * from ', tableName);
+    prepare myQuery from @setQuery;
+    execute myQuery;
+    deallocate prepare myQuery;
+end $$
+DELIMITER ;
+
+call user_proc6('market_db.member');
